@@ -456,7 +456,7 @@
             </div>
             
             <div class="tagline">
-                WELCOME TO THE WORLD OF ZOHO
+                The Operating System for Business
                 <!-- NEW TEXT LINK BUTTON -->
                 <div id="teleport-btn">CLICK ZOHO UNIVERSE</div>
             </div>
@@ -469,15 +469,13 @@
         // --- GLOBAL STATE TRACKER ---
         let isMainPageActive = false;
 
-        // --- CONFIGURATION (50+ ZOHO PRODUCTS) ---
+        // --- CONFIGURATION (50+ ZOHO PRODUCTS WITH CORRECT LINKS) ---
         const zohoProducts = [
             // CRM & Sales
             { name: "Zoho CRM", color: "#b62025", url: "https://www.zoho.com/crm/" },
             { name: "Zoho Bigin", color: "#b62025", url: "https://www.bigin.com/" },
             { name: "Zoho SalesIQ", color: "#b62025", url: "https://www.zoho.com/salesiq/" },
             { name: "Zoho Social", color: "#b62025", url: "https://www.zoho.com/social/" },
-            { name: "Zoho Survey", color: "#b62025", url: "https://www.zoho.com/survey/" },
-            { name: "Zoho Campaigns", color: "#b62025", url: "https://www.zoho.com/campaigns/" },
             { name: "Zoho Forms", color: "#b62025", url: "https://www.zoho.com/forms/" },
             { name: "Zoho Backstage", color: "#b62025", url: "https://www.zoho.com/backstage/" },
             { name: "Zoho SalesInbox", color: "#b62025", url: "https://www.zoho.com/salesinbox/" },
@@ -500,7 +498,7 @@
             { name: "Zoho Desk", color: "#673ab7", url: "https://www.zoho.com/desk/" },
             { name: "Zoho Assist", color: "#673ab7", url: "https://www.zoho.com/assist/" },
             { name: "Zoho Lens", color: "#673ab7", url: "https://www.zoho.com/lens/" },
-            { name: "Zoho ServiceDesk", color: "#673ab7", url: "https://www.zoho.com/servicedesk/" },
+            { name: "Zoho ServiceDesk", color: "#673ab7", url: "https://www.zoho.com/servicehelpplus/" }, // Fixed URL
 
             // Communication
             { name: "Zoho Mail", color: "#4285f4", url: "https://www.zoho.com/mail/" },
@@ -587,7 +585,6 @@
             osc.start(t); osc.stop(t + 0.5);
         }
 
-        // LOUD CRACKER SOUND (Sound Plus)
         function playCrackerSound() {
             if (!audioCtx) return;
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -828,7 +825,7 @@
 
             gsap.set(mainContent, { pointerEvents: "all" });
             
-            // CRITICAL: ACTIVATE MAIN PAGE FOR BLASTING
+            // ACTIVATE MAIN PAGE FOR BLASTING
             isMainPageActive = true;
         }
 
@@ -905,7 +902,7 @@
                 rotation: 135,
                 duration: 1.5,
                 ease: "power1.inOut",
-                onUpdate: () => {
+                onUpdate: () => { 
                      const rect = rocket.getBoundingClientRect();
                      if(rect.bottom > 0) {
                         for(let k=0; k<5; k++) {
@@ -929,11 +926,11 @@
             })
             // 6. Fast Up High Speed in Center
             .to(rocket, {
-                x: 0, // FORCE CENTER
+                x: 0, 
                 y: -3000,
-                duration: 0.8, // FAST DURATION
-                ease: "power4.in", // ACCELERATION
-                onUpdate: () => {
+                duration: 0.8,
+                ease: "power4.in",
+                onUpdate: () => { 
                      const rect = rocket.getBoundingClientRect();
                      if(rect.bottom > 0) {
                         for(let k=0; k<15; k++) {
@@ -965,7 +962,7 @@
         teleportBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             
-            // DEACTIVATE MAIN PAGE
+            // DEACTIVATE MAIN PAGE (Stop Blasting)
             isMainPageActive = false;
 
             playTeleportSound();
@@ -1044,7 +1041,7 @@
             // CHECK: Is Main Page Active?
             if(!isMainPageActive) return;
 
-            // CHECK: Are we clicking on teleport button?
+            // CHECK: Are we clicking on teleport button itself?
             if(e.target.id === 'teleport-btn' || e.target.closest('#teleport-btn')) return;
 
             // EXECUTE BLAST (Only if on main page)
