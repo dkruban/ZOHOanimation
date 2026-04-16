@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoho Cinematic Experience</title>
+    <!-- GSAP for Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght=900;700;500&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Montserrat', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: crosshair;
+        }
+
+        /* --- WELCOME OVERLAY --- */
+        #welcome-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 6000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        #welcome-text {
+            font-size: 3rem;
+            color: #fff;
+            text-transform: uppercase;
+            opacity: 0;
+            letter-spacing: 5px;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+        }
+
+        /* --- SEATBELT OVERLAY --- */
+        #seatbelt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #111;
+            z-index: 5000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .seatbelt-container {
+            position: relative;
+            width: 300px;
+            height: 200px;
+            cursor: pointer;
+        }
+
+        .belt-strap {
+            position: absolute;
+            top: -100px;
+            width: 40px;
+            height: 300px;
+            background: #333;
+            transform-origin: top center;
+        }
+        .belt-strap.left { left: 50px; transform: rotate(-15deg); }
+        .belt-strap.right { right: 50px; transform: rotate(15deg); }
+
+        .buckle-base {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 60px;
+            background: linear-gradient(to bottom, #555, #222);
+            border-radius: 10px;
+            border: 2px solid #000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            z-index: 2;
+        }
+
+        .buckle-slot {
+            width: 80px;
+            height: 15px;
+            background: #000;
+            margin: 20px auto 0;
+            border-radius: 4px;
+        }
+
+        .release-button {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 20px;
+            background: #b62025;
+            border-radius: 5px 5px 0 0;
+            transition: background 0.3s;
+        }
+
+        .belt-tongue {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60px;
+            height: 40px;
+            background: linear-gradient(to right, #ccc, #fff, #ccc);
+            border: 1px solid #999;
+            border-radius: 5px;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .belt-text {
+            margin-top: 50px;
+            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.7;
+        }
+
+        /* --- LAYERS MANAGEMENT --- */
+        #intro-layer {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000; z-index: 2000; display: none;
+            justify-content: center; align-items: center; flex-direction: column;
+        }
+
+        #countdown-layer {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000; z-index: 1900; display: none;
+            justify-content: center; align-items: center; flex-direction: column;
+        }
+
+        #countdown-text {
+            font-size: 20rem;
+            color: #fff;
+            font-weight: 900;
+            text-shadow: 0 0 50px #f4b400;
+        }
+
+        #rocket-layer {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000; z-index: 1500; display: none;
+            justify-content: center; align-items: flex-end; overflow: hidden;
+        }
+
+        #main-content {
+            position: relative; z-index: 10; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none;
+        }
+
+        /* --- DASHBOARD OVERLAY --- */
+        #dashboard-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.98);
+            z-index: 6000;
+            display: none;
+            overflow-y: auto;
+            perspective: 1000px;
+        }
+
+        /* --- BACK BUTTON --- */
+        #back-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 25px;
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            z-index: 7000;
+            transition: 0.3s;
+            border-radius: 5px;
+        }
+
+        #back-btn:hover {
+            background: #fff;
+            color: #000;
+            box-shadow: 0 0 20px #fff;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            width: 90%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 80px 20px;
+        }
+
+        .zoho-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+            color: #fff;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            opacity: 0;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 120px;
+        }
+
+        .zoho-card:hover {
+            transform: translateY(-5px) scale(1.05);
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 10px 30px rgba(255,255,255,0.1);
+            z-index: 2;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* --- DYNAMIC BACKGROUND --- */
+        #dynamic-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000; z-index: 0;
+            transition: background-color 0.1s ease-out;
+        }
+
+        /* --- ROCKET STYLES --- */
+        .rocket-container {
+            position: absolute; bottom: -150px; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center; z-index: 100;
+        }
+        .rocket-body {
+            width: 40px; height: 120px; background: #fff; border-radius: 50% 50% 5px 5px;
+            position: relative; box-shadow: inset -10px 0 10px rgba(0,0,0,0.2);
+        }
+        .rocket-window {
+            width: 15px; height: 15px; background: #4285f4; border-radius: 50%;
+            position: absolute; top: 40px; left: 50%; transform: translateX(-50%);
+            border: 3px solid #b62025;
+        }
+        .rocket-nose {
+            width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent;
+            border-bottom: 40px solid #b62025; position: absolute; top: -40px;
+        }
+        .rocket-fin-left {
+            width: 0; height: 0; border-top: 20px solid transparent; border-bottom: 20px solid #b62025;
+            border-right: 25px solid #b62025; position: absolute; bottom: 0; left: -20px;
+        }
+        .rocket-fin-right {
+            width: 0; height: 0; border-top: 20px solid transparent; border-bottom: 20px solid #b62025;
+            border-left: 25px solid #b62025; position: absolute; bottom: 0; right: -20px;
+        }
+        .rocket-flame {
+            width: 20px; height: 60px; background: #f4b400; margin-top: -5px;
+            border-radius: 0 0 20px 20px; filter: blur(5px);
+            animation: flame-flicker 0.1s infinite alternate;
+            box-shadow: 0 0 20px #f4b400; position: relative; top: 5px;
+        }
+        .rocket-flame::after {
+            content: ''; position: absolute; width: 12px; height: 40px; background: #fff;
+            left: 4px; top: 20px; border-radius: 20px; opacity: 0.8;
+        }
+        @keyframes flame-flicker { 0% { transform: scaleY(1); opacity: 0.8; } 100% { transform: scaleY(1.3); opacity: 1; } }
+
+        /* --- INTRO STYLES --- */
+        .intro-product-item {
+            position: absolute; font-size: 4rem; font-weight: 900; text-transform: uppercase;
+            opacity: 0; transform: scale(0.5); white-space: nowrap; text-align: center;
+            left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0.5);
+        }
+
+        /* --- ORIGINAL USER STYLES --- */
+        #flash {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white;
+            z-index: 999; pointer-events: none;
+        }
+
+        #particle-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+        }
+
+        .stage {
+            position: relative; z-index: 10; text-align: center; perspective: 1000px;
+        }
+
+        .logo-container {
+            display: flex; justify-content: center; transform-style: preserve-3d;
+        }
+
+        .letter-box {
+            display: inline-block; position: relative; margin: 0 5px; font-size: 10rem;
+            font-weight: 900; color: #fff; text-transform: uppercase; transform-style: preserve-3d;
+            opacity: 0; transform: scale(5) rotateY(180deg);
+        }
+
+        .letter-box.glow {
+            text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 40px currentColor, 0 0 80px currentColor;
+        }
+
+        .tagline {
+            margin-top: 20px; font-size: 1.2rem; letter-spacing: 10px;
+            color: rgba(255,255,255,0.8); opacity: 0; text-transform: uppercase;
+            background: linear-gradient(90deg, #b62025, #f4b400, #0f9d58, #4285f4);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- NEW: TEXT LINK BUTTON --- */
+        #teleport-btn {
+            margin-top: 20px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #4285f4;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid #4285f4;
+            padding-bottom: 2px;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            outline: none;
+        }
+
+        #teleport-btn:hover {
+            color: #fff;
+            border-bottom-color: #fff;
+            text-shadow: 0 0 10px #4285f4;
+            transform: scale(1.1);
+        }
+
+        .instruction {
+            position: absolute; bottom: 30px; color: rgba(255,255,255,0.4); font-size: 0.9rem;
+            opacity: 0; animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <!-- WELCOME OVERLAY -->
+    <div id="welcome-overlay">
+        <div id="welcome-text">WELCOME TO THE EXPERIENCE</div>
+    </div>
+
+    <!-- SEATBELT OVERLAY -->
+    <div id="seatbelt-overlay">
+        <div class="seatbelt-container" id="seatbelt-btn">
+            <div class="belt-strap left"></div>
+            <div class="belt-strap right"></div>
+            <div class="buckle-base">
+                <div class="release-button"></div>
+                <div class="buckle-slot"></div>
+            </div>
+            <div class="belt-tongue"></div>
+        </div>
+        <div class="belt-text">CLICK TO BUCKLE UP</div>
+    </div>
+
+    <!-- COUNTDOWN LAYER -->
+    <div id="countdown-layer">
+        <div id="countdown-text">3</div>
+    </div>
+
+    <!-- DASHBOARD OVERLAY (The Page with 50+ Links) -->
+    <div id="dashboard-overlay">
+        <!-- BACK BUTTON -->
+        <button id="back-btn">BACK TO HOME</button>
+
+        <h1 style="text-align: center; color: #fff; font-size: 3rem; margin-top: 40px; text-transform: uppercase; text-shadow: 0 0 20px #fff;">Zoho Universe</h1>
+        <div class="dashboard-grid" id="dashboard-grid">
+            <!-- Links injected by JS -->
+        </div>
+    </div>
+
+    <!-- Dynamic Background -->
+    <div id="dynamic-bg"></div>
+
+    <!-- Layer 1: Products Intro -->
+    <div id="intro-layer"></div>
+
+    <!-- Layer 2: Rocket Launch -->
+    <div id="rocket-layer">
+        <canvas id="smoke-canvas"></canvas>
+        <!-- SINGLE ROCKET -->
+        <div class="rocket-container" id="rocket">
+            <div class="rocket-nose"></div>
+            <div class="rocket-body">
+                <div class="rocket-window"></div>
+                <div class="rocket-fin-left"></div>
+                <div class="rocket-fin-right"></div>
+            </div>
+            <div class="rocket-flame"></div>
+        </div>
+    </div>
+
+    <!-- Layer 3: Main Website -->
+    <div id="main-content">
+        <div id="flash"></div>
+        <canvas id="particle-canvas"></canvas>
+
+        <div class="stage">
+            <div class="logo-container">
+                <div class="letter-box" style="color: #b62025;">Z</div>
+                <div class="letter-box" style="color: #f4b400;">O</div>
+                <div class="letter-box" style="color: #0f9d58;">H</div>
+                <div class="letter-box" style="color: #4285f4;">O</div>
+            </div>
+            
+            <div class="tagline">
+                The Operating System for Business
+                <!-- NEW TEXT LINK BUTTON -->
+                <div id="teleport-btn">CLICK ZOHO UNIVERSE</div>
+            </div>
+        </div>
+
+        <div class="instruction">CLICK ANYWHERE TO DETONATE</div>
+    </div>
+
+    <script>
+        // --- GLOBAL STATE TRACKER ---
+        let isMainPageActive = false;
+
+        // --- CONFIGURATION (50+ ZOHO PRODUCTS) ---
+        const zohoProducts = [
+            // CRM & Sales
+            { name: "Zoho CRM", color: "#b62025", url: "https://www.zoho.com/crm/" },
+            { name: "Zoho Bigin", color: "#b62025", url: "https://www.bigin.com/" },
+            { name: "Zoho SalesIQ", color: "#b62025", url: "https://www.zoho.com/salesiq/" },
+            { name: "Zoho Social", color: "#b62025", url: "https://www.zoho.com/social/" },
+            { name: "Zoho Survey", color: "#b62025", url: "https://www.zoho.com/survey/" },
+            { name: "Zoho Campaigns", color: "#b62025", url: "https://www.zoho.com/campaigns/" },
+            { name: "Zoho Forms", color: "#b62025", url: "https://www.zoho.com/forms/" },
+            { name: "Zoho Backstage", color: "#b62025", url: "https://www.zoho.com/backstage/" },
+            { name: "Zoho SalesInbox", color: "#b62025", url: "https://www.zoho.com/salesinbox/" },
+            
+            // Finance & Accounting
+            { name: "Zoho Books", color: "#0f9d58", url: "https://www.zoho.com/books/" },
+            { name: "Zoho Invoice", color: "#0f9d58", url: "https://www.zoho.com/invoice/" },
+            { name: "Zoho Expense", color: "#0f9d58", url: "https://www.zoho.com/expense/" },
+            { name: "Zoho Inventory", color: "#0f9d58", url: "https://www.zoho.com/inventory/" },
+            { name: "Zoho Payroll", color: "#0f9d58", url: "https://www.zoho.com/payroll/" },
+            { name: "Zoho Checkout", color: "#0f9d58", url: "https://www.zoho.com/checkout/" },
+            { name: "Zoho Subscriptions", color: "#0f9d58", url: "https://www.zoho.com/subscriptions/" },
+            { name: "Zoho Billing", color: "#0f9d58", url: "https://www.zoho.com/billing/" },
+
+            // HR & People
+            { name: "Zoho People", color: "#e91e63", url: "https://www.zoho.com/people/" },
+            { name: "Zoho Recruit", color: "#e91e63", url: "https://www.zoho.com/recruit/" },
+
+            // Support & IT
+            { name: "Zoho Desk", color: "#673ab7", url: "https://www.zoho.com/desk/" },
+            { name: "Zoho Assist", color: "#673ab7", url: "https://www.zoho.com/assist/" },
+            { name: "Zoho Lens", color: "#673ab7", url: "https://www.zoho.com/lens/" },
+            { name: "Zoho ServiceDesk", color: "#673ab7", url: "https://www.zoho.com/servicedesk/" },
+
+            // Communication
+            { name: "Zoho Mail", color: "#4285f4", url: "https://www.zoho.com/mail/" },
+            { name: "Zoho Cliq", color: "#4285f4", url: "https://www.zoho.com/cliq/" },
+            { name: "Zoho Meeting", color: "#4285f4", url: "https://www.zoho.com/meeting/" },
+            { name: "Zoho ShowTime", color: "#4285f4", url: "https://www.zoho.com/showtime/" },
+            { name: "Zoho Connect", color: "#4285f4", url: "https://www.zoho.com/connect/" },
+            { name: "Zoho Sprints", color: "#4285f4", url: "https://www.zoho.com/sprints/" },
+
+            // Productivity
+            { name: "Zoho Projects", color: "#f4b400", url: "https://www.zoho.com/projects/" },
+            { name: "Zoho WorkDrive", color: "#f4b400", url: "https://www.zoho.com/workdrive/" },
+            { name: "Zoho Docs", color: "#f4b400", url: "https://www.zoho.com/docs/" },
+            { name: "Zoho Sheet", color: "#f4b400", url: "https://www.zoho.com/sheet/" },
+            { name: "Zoho Show", color: "#f4b400", url: "https://www.zoho.com/show/" },
+            { name: "Zoho Writer", color: "#f4b400", url: "https://www.zoho.com/writer/" },
+            { name: "Zoho Notebook", color: "#f4b400", url: "https://www.zoho.com/notebook/" },
+            { name: "Zoho Sign", color: "#f4b400", url: "https://www.zoho.com/sign/" },
+            { name: "Zoho Vault", color: "#f4b400", url: "https://www.zoho.com/vault/" },
+            { name: "Zoho Calendar", color: "#f4b400", url: "https://www.zoho.com/calendar/" },
+
+            // Analytics & AI
+            { name: "Zoho Analytics", color: "#00bcd4", url: "https://www.zoho.com/analytics/" },
+            { name: "Zoho PageSense", color: "#00bcd4", url: "https://www.zoho.com/pagesense/" },
+            { name: "Zoho DataPrep", color: "#00bcd4", url: "https://www.zoho.com/dataprep/" },
+
+            // Developer
+            { name: "Zoho Creator", color: "#9c27b0", url: "https://www.zoho.com/creator/" },
+            { name: "Zoho Flow", color: "#9c27b0", url: "https://www.zoho.com/flow/" },
+            { name: "Zoho Catalyst", color: "#9c27b0", url: "https://www.zoho.com/catalyst/" },
+
+            // Business Suite
+            { name: "Zoho One", color: "#ffffff", url: "https://www.zoho.com/one/" },
+            { name: "Zoho Workplace", color: "#ffffff", url: "https://www.zoho.com/workplace/" },
+            { name: "Zoho CRM Plus", color: "#ffffff", url: "https://www.zoho.com/crmplus/" },
+            { name: "Zoho MarketingHub", color: "#ffffff", url: "https://www.zoho.com/marketinghub/" },
+            
+            // Additions
+            { name: "Zoho BugTracker", color: "#ff5722", url: "https://www.zoho.com/bugtracker/" },
+            { name: "Zoho Wiki", color: "#ff5722", url: "https://www.zoho.com/wiki/" },
+            { name: "Zoho Sites", color: "#ff5722", url: "https://www.zoho.com/sites/" }
+        ];
+
+        // --- AUDIO SYSTEM ---
+        let audioCtx;
+        let synth = window.speechSynthesis;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playClickSound() {
+            if(!audioCtx) return;
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(800, t);
+            osc.frequency.exponentialRampToValueAtTime(100, t + 0.1);
+            gain.gain.setValueAtTime(0.5, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(t); osc.stop(t + 0.1);
+        }
+
+        function playAirSound() {
+            if(!audioCtx) return;
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            const filter = audioCtx.createBiquadFilter();
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(100, t);
+            osc.frequency.exponentialRampToValueAtTime(800, t + 0.4);
+            filter.type = 'bandpass'; filter.frequency.setValueAtTime(300, t);
+            filter.frequency.linearRampToValueAtTime(1000, t + 0.4);
+            gain.gain.setValueAtTime(0.3, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.4);
+            osc.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(t); osc.stop(t + 0.5);
+        }
+
+        // LOUD CRACKER SOUND (Sound Plus)
+        function playCrackerSound() {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const t = audioCtx.currentTime;
+            const bufferSize = audioCtx.sampleRate * 0.5;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            const noise = audioCtx.createBufferSource(); noise.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(1000, t);
+            filter.frequency.exponentialRampToValueAtTime(100, t + 0.3);
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(1.2, t); // LOUDER VOLUME
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+            noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+            noise.start(t);
+        }
+
+        function playRocketLaunchSound() {
+            if(!audioCtx) return;
+            const t = audioCtx.currentTime;
+            const bufferSize = audioCtx.sampleRate * 3;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            const noise = audioCtx.createBufferSource(); noise.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(200, t); filter.frequency.linearRampToValueAtTime(2000, t + 2.5);
+            const gain = audioCtx.createGain(); gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(1.0, t + 1); gain.gain.linearRampToValueAtTime(0, t + 3);
+            noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination); noise.start(t);
+            const osc = audioCtx.createOscillator(); osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(100, t); osc.frequency.exponentialRampToValueAtTime(1000, t + 2);
+            const oscGain = audioCtx.createGain(); oscGain.gain.setValueAtTime(0.2, t);
+            oscGain.gain.linearRampToValueAtTime(0, t + 3);
+            osc.connect(oscGain); oscGain.connect(audioCtx.destination); osc.start(t);
+        }
+
+        function playTeleportSound() {
+            if(!audioCtx) return;
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(200, t);
+            osc.frequency.exponentialRampToValueAtTime(800, t + 0.5);
+            const osc2 = audioCtx.createOscillator();
+            osc2.type = 'square';
+            osc2.frequency.setValueAtTime(50, t);
+            osc2.frequency.linearRampToValueAtTime(100, t + 0.5);
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(100, t);
+            filter.frequency.linearRampToValueAtTime(3000, t + 0.5);
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(0.5, t);
+            gain.gain.linearRampToValueAtTime(0, t + 0.6);
+            osc.connect(filter); osc2.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(t); osc.stop(t+0.6); osc2.start(t); osc2.stop(t+0.6);
+        }
+
+        // --- SETUP ---
+        const introLayer = document.getElementById('intro-layer');
+        const countdownLayer = document.getElementById('countdown-layer');
+        const countdownText = document.getElementById('countdown-text');
+        const rocketLayer = document.getElementById('rocket-layer');
+        const mainContent = document.getElementById('main-content');
+        const seatbeltOverlay = document.getElementById('seatbelt-overlay');
+        const seatbeltBtn = document.getElementById('seatbelt-btn');
+        const releaseBtn = document.querySelector('.release-button');
+        const dynamicBg = document.getElementById('dynamic-bg');
+        const teleportBtn = document.getElementById('teleport-btn');
+        const dashboardOverlay = document.getElementById('dashboard-overlay');
+        const dashboardGrid = document.getElementById('dashboard-grid');
+        const backBtn = document.getElementById('back-btn');
+        const welcomeOverlay = document.getElementById('welcome-overlay');
+        const welcomeText = document.getElementById('welcome-text');
+        const rocket = document.getElementById('rocket');
+
+        // Populate Dashboard
+        zohoProducts.forEach(prod => {
+            const card = document.createElement('a');
+            card.href = prod.url;
+            card.target = "_blank";
+            card.classList.add('zoho-card');
+            card.style.borderColor = prod.color;
+            card.innerHTML = `
+                <span class="card-icon" style="color:${prod.color}">⚡</span>
+                <div class="card-title" style="color:${prod.color}">${prod.name}</div>
+                <div style="font-size:0.7rem; opacity:0.7; margin-top:5px;">VISIT SITE</div>
+            `;
+            dashboardGrid.appendChild(card);
+        });
+
+        // Intro Elements
+        const introProductList = zohoProducts.slice(0, 8);
+        const productElements = [];
+        introProductList.forEach(prod => {
+            const el = document.createElement('div');
+            el.classList.add('intro-product-item');
+            el.innerText = prod.name;
+            el.style.color = prod.color;
+            el.style.textShadow = `0 0 50px ${prod.color}`;
+            introLayer.appendChild(el);
+            productElements.push(el);
+        });
+
+        // --- PARTICLE SYSTEM (Explosions) ---
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let explosionParticles = [];
+        
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class ExplosionParticle {
+            constructor(x, y, color) {
+                this.x = x; this.y = y; this.color = color;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 15 + 2;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.alpha = 1;
+                this.friction = 0.96; this.gravity = 0.05;
+                this.decay = Math.random() * 0.015 + 0.005;
+                this.size = Math.random() * 3 + 2;
+            }
+            update() {
+                this.vx *= this.friction; this.vy *= this.friction;
+                this.vy += this.gravity;
+                this.x += this.vx; this.y += this.vy;
+                this.alpha -= this.decay;
+            }
+            draw() {
+                ctx.save(); ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function explode(x, y) {
+            const colors = ['#b62025', '#f4b400', '#0f9d58', '#4285f4', '#ffffff', '#673ab7'];
+            const blastColor = colors[Math.floor(Math.random() * colors.length)];
+            for (let i = 0; i < 100; i++) {
+                explosionParticles.push(new ExplosionParticle(x, y, colors[Math.floor(Math.random() * colors.length)]));
+            }
+            playCrackerSound();
+            flashBackground(blastColor);
+        }
+
+        function flashBackground(color) {
+            dynamicBg.style.backgroundColor = color;
+            dynamicBg.style.opacity = '0.5'; 
+            setTimeout(() => { dynamicBg.style.backgroundColor = '#000'; dynamicBg.style.opacity = '1'; }, 150);
+        }
+
+        function animateExplosions() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            for (let i = explosionParticles.length - 1; i >= 0; i--) {
+                explosionParticles[i].update();
+                explosionParticles[i].draw();
+                if (explosionParticles[i].alpha <= 0) explosionParticles.splice(i, 1);
+            }
+            requestAnimationFrame(animateExplosions);
+        }
+        animateExplosions();
+
+        // --- SMOKE SYSTEM (Thick & Slow) ---
+        const sCanvas = document.getElementById('smoke-canvas');
+        const sCtx = sCanvas.getContext('2d');
+        let smokeParticles = [];
+        
+        function resizeSmoke() {
+            sCanvas.width = window.innerWidth;
+            sCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeSmoke);
+        resizeSmoke();
+
+        class SmokeParticle {
+            constructor(x, y, isBlast = false) {
+                this.x = x; this.y = y;
+                this.size = isBlast ? Math.random() * 100 + 50 : Math.random() * 20 + 10;
+                this.vx = isBlast ? (Math.random() - 0.5) * 20 : (Math.random() - 0.5) * 5;
+                this.vy = isBlast ? (Math.random() * -10) - 5 : Math.random() * 10 + 5;
+                this.alpha = 0.8;
+                this.decay = isBlast ? 0.002 : 0.01;
+                this.growth = isBlast ? 1.5 : 1.2;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                this.size += this.growth; this.alpha -= this.decay;
+            }
+            draw() {
+                sCtx.save(); sCtx.globalAlpha = this.alpha;
+                sCtx.fillStyle = 'rgba(200, 200, 200, 0.4)';
+                sCtx.beginPath(); sCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2); sCtx.fill();
+                sCtx.restore();
+            }
+        }
+
+        function animateSmoke() {
+            sCtx.fillStyle = 'rgba(0,0,0,0.1)'; 
+            sCtx.fillRect(0, 0, sCanvas.width, sCanvas.height);
+            for (let i = smokeParticles.length - 1; i >= 0; i--) {
+                smokeParticles[i].update();
+                smokeParticles[i].draw();
+                if (smokeParticles[i].alpha <= 0) smokeParticles.splice(i, 1);
+            }
+            requestAnimationFrame(animateSmoke);
+        }
+        animateSmoke();
+
+        // --- MAIN ANIMATION SEQUENCE LOGIC ---
+        function startMainExperience() {
+            const mainTl = gsap.timeline();
+            mainTl.to("#flash", { opacity: 0, duration: 1.5, ease: "power2.inOut" })
+            .to(".letter-box", {
+                opacity: 1, scale: 1, rotationY: 0, rotationX: 0,
+                duration: 1.2, stagger: 0.15, ease: "back.out(1.7)",
+            }, "-=0.5")
+            .to(".letter-box", {
+                className: "letter-box glow", duration: 0.1, stagger: 0.05
+            }, "-=1.0")
+            .to(".tagline", { opacity: 1, y: 0, duration: 1, ease: "power3.out" }, "-=0.8")
+            .to(".instruction", { opacity: 1, duration: 0.5 });
+
+            gsap.to(".letter-box", {
+                y: -20, rotation: 5, duration: 2,
+                stagger: { each: 0.5, yoyo: true, repeat: -1 }, ease: "sine.inOut"
+            });
+
+            gsap.set(mainContent, { pointerEvents: "all" });
+            
+            // CRITICAL: ACTIVATE MAIN PAGE FOR BLASTING
+            isMainPageActive = true;
+        }
+
+        function launchRocketSequence() {
+            introLayer.style.display = 'none';
+            countdownLayer.style.display = 'flex';
+            
+            const countTl = gsap.timeline({
+                onComplete: () => {
+                    countdownLayer.style.display = 'none';
+                    rocketLayer.style.display = 'block';
+                    playRocketLaunchSound();
+                    startRocketFly();
+                }
+            });
+
+            countTl.to(countdownText, { scale: 1.5, opacity: 1, duration: 0.5, onStart: () => {
+                countdownText.innerText = "3";
+                synth.speak(new SpeechSynthesisUtterance("3"));
+            }})
+            .to(countdownText, { scale: 2, opacity: 0, duration: 0.5 })
+            
+            .to(countdownText, { scale: 1.5, opacity: 1, duration: 0.5, onStart: () => {
+                countdownText.innerText = "2";
+                synth.speak(new SpeechSynthesisUtterance("2"));
+            }})
+            .to(countdownText, { scale: 2, opacity: 0, duration: 0.5 })
+            
+            .to(countdownText, { scale: 1.5, opacity: 1, duration: 0.5, onStart: () => {
+                countdownText.innerText = "1";
+                synth.speak(new SpeechSynthesisUtterance("1"));
+            }})
+            .to(countdownText, { scale: 2, opacity: 0, duration: 0.5 });
+        }
+
+        function startRocketFly() {
+            // Rocket Timeline: Up -> Right -> Left Corner -> Down -> U-Turn -> Fast Up Center
+            const rocketTl = gsap.timeline({
+                onComplete: () => {
+                    // MASSIVE SMOKE BLAST
+                    for(let k=0; k<2000; k++) { 
+                        smokeParticles.push(new SmokeParticle(
+                            window.innerWidth/2 + (Math.random()-0.5)*1000, 
+                            window.innerHeight/2, 
+                            true
+                        ));
+                    }
+                    
+                    setTimeout(() => {
+                        rocketLayer.style.display = 'none';
+                        gsap.set(mainContent, { opacity: 1 });
+                        startMainExperience();
+                    }, 2500); 
+                }
+            });
+
+            // 1. Start Up
+            rocketTl.to(rocket, {
+                y: -300,
+                duration: 1,
+                ease: "power2.out"
+            })
+            // 2. Fly to Right Side
+            .to(rocket, {
+                x: 500,
+                rotation: 45,
+                duration: 0.8,
+                ease: "power2.inOut"
+            })
+            // 3. Fly to Left Corner (diagonal down/up)
+            .to(rocket, {
+                x: -600,
+                y: -200,
+                rotation: 135,
+                duration: 1.5,
+                ease: "power1.inOut",
+                onUpdate: () => {
+                     const rect = rocket.getBoundingClientRect();
+                     if(rect.bottom > 0) {
+                        for(let k=0; k<5; k++) {
+                            smokeParticles.push(new SmokeParticle(rect.left + rect.width / 2, rect.top + rect.height));
+                        }
+                     }
+                }
+            })
+            // 4. Come Down
+            .to(rocket, {
+                y: 100,
+                rotation: 180,
+                duration: 0.5,
+                ease: "bounce.out"
+            })
+            // 5. U-Turn
+            .to(rocket, {
+                rotation: 0,
+                duration: 0.2,
+                ease: "power2.in"
+            })
+            // 6. Fast Up High Speed in Center
+            .to(rocket, {
+                x: 0, // FORCE CENTER
+                y: -3000,
+                duration: 0.8, // FAST DURATION
+                ease: "power4.in", // ACCELERATION
+                onUpdate: () => {
+                     const rect = rocket.getBoundingClientRect();
+                     if(rect.bottom > 0) {
+                        for(let k=0; k<15; k++) {
+                            smokeParticles.push(new SmokeParticle(rect.left + rect.width / 2, rect.top + rect.height));
+                        }
+                     }
+                }
+            });
+        }
+
+        function startIntro() {
+            introLayer.style.display = 'flex';
+            const introTl = gsap.timeline({ onComplete: launchRocketSequence });
+            introProductList.forEach((prod, index) => {
+                const targetEl = productElements[index];
+                introTl.to(targetEl, {
+                    opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)",
+                    onStart: () => { playAirSound(); }
+                })
+                .to(targetEl, { scale: 1.1, duration: 0.8, ease: "power1.inOut" })
+                .to(targetEl, {
+                    opacity: 0, scale: 2, duration: 0.4, ease: "power2.in",
+                    onStart: () => { playCrackerSound(); explode(window.innerWidth / 2, window.innerHeight / 2); }
+                });
+            });
+        }
+
+        // --- TELEPORTATION LOGIC (To Dashboard) ---
+        teleportBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            // DEACTIVATE MAIN PAGE
+            isMainPageActive = false;
+
+            playTeleportSound();
+            gsap.to("body", {
+                x: 10, y: 10, duration: 0.05, repeat: 10, yoyo: true,
+                ease: "power1.inOut",
+                onComplete: () => gsap.set("body", {x:0, y:0})
+            });
+            const tl = gsap.timeline();
+            tl.to(mainContent, {
+                scale: 0.1, opacity: 0, rotation: 45, duration: 0.8, ease: "power4.in"
+            })
+            .set(dashboardOverlay, { display: "block" })
+            .fromTo(".zoho-card", 
+                { y: 50, opacity: 0, rotationX: -90 },
+                { y: 0, opacity: 1, rotationX: 0, duration: 0.5, stagger: 0.05, ease: "back.out(1.7)" }
+            );
+        });
+
+        // --- BACK BUTTON LOGIC (To Main Page) ---
+        backBtn.addEventListener('click', () => {
+            playTeleportSound();
+            
+            // Hide Dashboard
+            const tl = gsap.timeline();
+            tl.to('.zoho-card', { y: -50, opacity: 0, rotationX: 90, duration: 0.3, stagger: 0.05, ease: "power2.in" })
+            .to('#dashboard-overlay', { display: "none" })
+            
+            // Show Main Page
+            .set(mainContent, { opacity: 1 })
+            .to(mainContent, { scale: 1, rotation: 0, duration: 0.8, ease: "elastic.out(1, 0.75)" });
+            
+            // ACTIVATE MAIN PAGE (CRITICAL FIX)
+            // We set it true immediately so that the next click works
+            isMainPageActive = true;
+        });
+
+        // --- EVENT LISTENERS ---
+        
+        welcomeOverlay.addEventListener('click', () => {
+            if(welcomeOverlay.style.display === 'none') return;
+            initAudio(); 
+            welcomeTl.progress(1); 
+        });
+
+        const welcomeTl = gsap.timeline();
+        welcomeTl.to(welcomeText, {
+            opacity: 1, y: 0, scale: 1, duration: 3, ease: "power2.out"
+        })
+        .to(welcomeText, { duration: 2 })
+        .to(welcomeOverlay, {
+            opacity: 0, duration: 1,
+            onComplete: () => {
+                welcomeOverlay.style.display = 'none';
+                seatbeltOverlay.style.display = 'flex';
+            }
+        });
+
+        seatbeltBtn.addEventListener('click', () => {
+            initAudio();
+            playClickSound();
+            gsap.to(".belt-tongue", {
+                x: 0, duration: 0.2, ease: "back.out(2)",
+                onComplete: () => {
+                    releaseBtn.style.background = "#0f9d58";
+                    gsap.to(".seatbelt-container", { scale: 1.1, duration: 0.1, yoyo: true, repeat: 1 });
+                    setTimeout(() => {
+                        seatbeltOverlay.style.opacity = 0;
+                        setTimeout(() => { seatbeltOverlay.style.display = 'none'; startIntro(); }, 500);
+                    }, 800);
+                }
+            });
+        });
+
+        window.addEventListener('click', (e) => {
+            // CHECK: Is Main Page Active?
+            if(!isMainPageActive) return;
+
+            // CHECK: Are we clicking on teleport button?
+            if(e.target.id === 'teleport-btn' || e.target.closest('#teleport-btn')) return;
+
+            // EXECUTE BLAST (Only if on main page)
+            explode(e.clientX, e.clientY);
+            gsap.to("body", { x: 10, y: 10, duration: 0.05, yoyo: true, repeat: 3, onComplete: () => gsap.set("body", {x: 0, y: 0}) });
+        });
+
+        setInterval(() => {
+            // Only auto explode if main page is active
+            if(!isMainPageActive) return;
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * (canvas.height / 2);
+            explode(x, y);
+        }, 800);
+
+    </script>
+</body>
+</html>
